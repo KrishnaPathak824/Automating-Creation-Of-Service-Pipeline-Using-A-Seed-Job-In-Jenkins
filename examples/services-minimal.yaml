@@ -1,0 +1,18 @@
+# Minimal Example Configuration
+# This is a simplified example showing the minimum required configuration
+
+organization: "MyCompany"
+gitBaseUrl: "https://github.com"
+credentials: "github-credentials"
+
+services:
+  - name: "simple-service"
+    repo: "simple-service"
+    branch: "main"
+    description: "A simple microservice with minimal configuration"
+
+  - name: "another-service"
+    repo: "another-service"
+    branch: "develop"
+    description: "Another service building from develop branch"
+    schedule: "H 1 * * *"
