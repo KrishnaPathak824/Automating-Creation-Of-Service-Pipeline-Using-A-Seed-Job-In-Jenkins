@@ -6,6 +6,14 @@ gitBaseUrl: "https://github.com"
 credentials: "github-credentials"
 jenkinsfilePath: "Jenkinsfile"
 
+# NOTE: Schedule expressions use Jenkins' "H" (hash) feature to distribute builds
+# and avoid all jobs running simultaneously:
+# - "H 1 * * *" = Once daily around 1 AM (exact minute varies per job)
+# - "H 3 * * *" = Once daily around 3 AM (exact minute varies per job)
+# - "H/30 * * * *" = Every 30 minutes at a consistent offset
+# - "H 4 * * 1-5" = Weekdays around 4 AM
+# This prevents resource contention and spreads the load across the Jenkins cluster
+
 services:
   # Service with multiple parameter types
   - name: "api-gateway"

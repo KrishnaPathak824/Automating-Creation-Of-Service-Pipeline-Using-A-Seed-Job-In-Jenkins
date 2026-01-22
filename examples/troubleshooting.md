@@ -251,12 +251,16 @@ parameters:
 ### Validate YAML Before Committing
 
 ```bash
-# Using Python
+# Using Python (safe for local validation)
 python3 -c "import yaml; yaml.safe_load(open('config/services.yaml'))"
 
-# Using online validators
-# Visit: https://www.yamllint.com/
+# Using yamllint if installed
+yamllint config/services.yaml
+
+# For CI/CD pipelines, integrate YAML validation as a pre-commit hook
 ```
+
+**Security Note:** Do NOT use online YAML validators for configuration files that may contain sensitive information (repository names, internal URLs, etc.). Always validate locally.
 
 ### Test Individual Pipeline Creation
 

@@ -15,9 +15,25 @@
 
 import groovy.yaml.YamlSlurper
 
-// Read the services configuration file
-def servicesConfigFile = readFileFromWorkspace('config/services.yaml')
-def config = new YamlSlurper().parseText(servicesConfigFile)
+// Read the services configuration file with error handling
+def config
+try {
+    def servicesConfigFile = readFileFromWorkspace('config/services.yaml')
+    config = new YamlSlurper().parseText(servicesConfigFile)
+} catch (FileNotFoundException e) {
+    throw new RuntimeException("Configuration file 'config/services.yaml' not found. Please ensure the file exists in the repository.", e)
+} catch (Exception e) {
+    throw new RuntimeException("Failed to parse configuration file 'config/services.yaml'. Please check YAML syntax.", e)
+}
+
+// Validate configuration
+if (!config || !config.services) {
+    throw new RuntimeException("Invalid configuration: 'services' section is missing or empty in config/services.yaml")
+}
+
+if (!(config.services instanceof List) || config.services.isEmpty()) {
+    throw new RuntimeException("Invalid configuration: 'services' must be a non-empty list in config/services.yaml")
+}
 
 // Get common configuration
 def organization = config.organization ?: 'MyOrganization'
@@ -33,6 +49,11 @@ folder("${organization}-Services") {
 
 // Iterate through each service and create a pipeline job
 config.services.each { service ->
+    if (!service.name) {
+        println "WARNING: Skipping service without a name: ${service}"
+        return
+    }
+    
     def serviceName = service.name
     def repoName = service.repo ?: serviceName
     def branch = service.branch ?: 'main'

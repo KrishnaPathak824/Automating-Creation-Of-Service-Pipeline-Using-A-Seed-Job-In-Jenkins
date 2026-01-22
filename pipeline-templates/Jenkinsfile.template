@@ -24,6 +24,7 @@ pipeline {
         SERVICE_NAME = "${env.JOB_NAME.split('/')[-1]}"
         BUILD_VERSION = "${env.BUILD_NUMBER}"
         DOCKER_REGISTRY = "docker.io"
+        // Uncomment and configure if using Docker:
         // DOCKER_CREDENTIALS = credentials('docker-hub-credentials')
     }
     
