@@ -1,0 +1,238 @@
+#!/usr/bin/env groovy
+
+/**
+ * Reusable Jenkins Pipeline Template for Microservices
+ * 
+ * This template provides a standardized CI/CD pipeline for microservices
+ * with stages for build, test, quality checks, and deployment.
+ * 
+ * Copy this file to your microservice repository as 'Jenkinsfile'
+ */
+
+pipeline {
+    agent any
+    
+    // Parameters can be overridden in the seed job configuration
+    parameters {
+        string(name: 'ENVIRONMENT', defaultValue: 'development', description: 'Target environment')
+        booleanParam(name: 'RUN_TESTS', defaultValue: true, description: 'Run automated tests')
+        choice(name: 'LOG_LEVEL', choices: ['INFO', 'DEBUG', 'WARN', 'ERROR'], description: 'Log level')
+    }
+    
+    environment {
+        // Common environment variables
+        SERVICE_NAME = "${env.JOB_NAME.split('/')[-1]}"
+        BUILD_VERSION = "${env.BUILD_NUMBER}"
+        DOCKER_REGISTRY = "docker.io"
+        // Uncomment and configure if using Docker:
+        // DOCKER_CREDENTIALS = credentials('docker-hub-credentials')
+    }
+    
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '10', artifactNumToKeepStr: '5'))
+        timeout(time: 1, unit: 'HOURS')
+        timestamps()
+        disableConcurrentBuilds()
+    }
+    
+    stages {
+        stage('Checkout') {
+            steps {
+                echo "Checking out code for ${SERVICE_NAME}..."
+                checkout scm
+                script {
+                    env.GIT_COMMIT_SHORT = sh(
+                        script: "git rev-parse --short HEAD",
+                        returnStdout: true
+                    ).trim()
+                }
+                echo "Checked out commit: ${env.GIT_COMMIT_SHORT}"
+            }
+        }
+        
+        stage('Environment Setup') {
+            steps {
+                echo "Setting up environment..."
+                echo "Service: ${SERVICE_NAME}"
+                echo "Environment: ${params.ENVIRONMENT}"
+                echo "Build Version: ${BUILD_VERSION}"
+                echo "Log Level: ${params.LOG_LEVEL}"
+            }
+        }
+        
+        stage('Build') {
+            steps {
+                echo "Building ${SERVICE_NAME}..."
+                script {
+                    // Example build commands - customize based on your tech stack
+                    // For Java/Maven:
+                    // sh 'mvn clean package -DskipTests'
+                    
+                    // For Node.js:
+                    // sh 'npm install'
+                    // sh 'npm run build'
+                    
+                    // For Python:
+                    // sh 'pip install -r requirements.txt'
+                    
+                    // For Go:
+                    // sh 'go build -o app'
+                    
+                    echo "Build completed successfully"
+                }
+            }
+        }
+        
+        stage('Test') {
+            when {
+                expression { params.RUN_TESTS == true }
+            }
+            steps {
+                echo "Running tests for ${SERVICE_NAME}..."
+                script {
+                    // Example test commands - customize based on your tech stack
+                    // For Java/Maven:
+                    // sh 'mvn test'
+                    
+                    // For Node.js:
+                    // sh 'npm test'
+                    
+                    // For Python:
+                    // sh 'pytest'
+                    
+                    // For Go:
+                    // sh 'go test ./...'
+                    
+                    echo "Tests completed successfully"
+                }
+            }
+            post {
+                always {
+                    // Publish test results if available
+                    // junit '**/target/surefire-reports/*.xml' // For Java
+                    // junit '**/test-results/*.xml' // For Node.js
+                    echo "Test reports would be published here"
+                }
+            }
+        }
+        
+        stage('Code Quality Analysis') {
+            steps {
+                echo "Running code quality analysis..."
+                script {
+                    // Example quality checks - customize based on your needs
+                    // For SonarQube:
+                    // sh 'mvn sonar:sonar'
+                    
+                    // For ESLint (Node.js):
+                    // sh 'npm run lint'
+                    
+                    // For Python:
+                    // sh 'pylint src/'
+                    
+                    echo "Code quality analysis completed"
+                }
+            }
+        }
+        
+        stage('Security Scan') {
+            steps {
+                echo "Running security scan..."
+                script {
+                    // Example security scans
+                    // For dependency check:
+                    // sh 'npm audit' // Node.js
+                    // sh 'mvn dependency-check:check' // Java
+                    
+                    echo "Security scan completed"
+                }
+            }
+        }
+        
+        stage('Build Docker Image') {
+            steps {
+                echo "Building Docker image for ${SERVICE_NAME}..."
+                script {
+                    // Example Docker build
+                    // def imageName = "${DOCKER_REGISTRY}/${SERVICE_NAME}:${BUILD_VERSION}"
+                    // sh "docker build -t ${imageName} ."
+                    // sh "docker tag ${imageName} ${DOCKER_REGISTRY}/${SERVICE_NAME}:latest"
+                    
+                    echo "Docker image built successfully"
+                }
+            }
+        }
+        
+        stage('Push Docker Image') {
+            steps {
+                echo "Pushing Docker image to registry..."
+                script {
+                    // Example Docker push
+                    // docker.withRegistry("https://${DOCKER_REGISTRY}", 'docker-hub-credentials') {
+                    //     def imageName = "${SERVICE_NAME}:${BUILD_VERSION}"
+                    //     sh "docker push ${DOCKER_REGISTRY}/${imageName}"
+                    //     sh "docker push ${DOCKER_REGISTRY}/${SERVICE_NAME}:latest"
+                    // }
+                    
+                    echo "Docker image pushed successfully"
+                }
+            }
+        }
+        
+        stage('Deploy') {
+            steps {
+                echo "Deploying ${SERVICE_NAME} to ${params.ENVIRONMENT}..."
+                script {
+                    // Example deployment commands
+                    // For Kubernetes:
+                    // sh "kubectl set image deployment/${SERVICE_NAME} ${SERVICE_NAME}=${DOCKER_REGISTRY}/${SERVICE_NAME}:${BUILD_VERSION} -n ${params.ENVIRONMENT}"
+                    
+                    // For Docker Compose:
+                    // sh "docker-compose -f docker-compose.${params.ENVIRONMENT}.yml up -d"
+                    
+                    // For AWS ECS:
+                    // sh "aws ecs update-service --cluster ${params.ENVIRONMENT} --service ${SERVICE_NAME} --force-new-deployment"
+                    
+                    echo "Deployment completed successfully"
+                }
+            }
+        }
+        
+        stage('Smoke Tests') {
+            steps {
+                echo "Running smoke tests..."
+                script {
+                    // Example smoke tests
+                    // sh "curl -f http://${SERVICE_NAME}.${params.ENVIRONMENT}.local/health || exit 1"
+                    
+                    echo "Smoke tests passed"
+                }
+            }
+        }
+    }
+    
+    post {
+        success {
+            echo "Pipeline completed successfully for ${SERVICE_NAME}!"
+            // Send success notification
+            // emailext(
+            //     subject: "SUCCESS: ${SERVICE_NAME} - Build #${BUILD_NUMBER}",
+            //     body: "The pipeline for ${SERVICE_NAME} completed successfully.",
+            //     to: "team@example.com"
+            // )
+        }
+        failure {
+            echo "Pipeline failed for ${SERVICE_NAME}!"
+            // Send failure notification
+            // emailext(
+            //     subject: "FAILURE: ${SERVICE_NAME} - Build #${BUILD_NUMBER}",
+            //     body: "The pipeline for ${SERVICE_NAME} failed. Please check the logs.",
+            //     to: "team@example.com"
+            // )
+        }
+        always {
+            echo "Cleaning up..."
+            cleanWs()
+        }
+    }
+}

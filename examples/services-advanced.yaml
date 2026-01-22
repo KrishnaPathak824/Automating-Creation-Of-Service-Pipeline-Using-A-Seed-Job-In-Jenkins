@@ -1,0 +1,141 @@
+# Advanced Example Configuration
+# This example demonstrates advanced features and configurations
+
+organization: "TechCorp"
+gitBaseUrl: "https://github.com"
+credentials: "github-credentials"
+jenkinsfilePath: "Jenkinsfile"
+
+# NOTE: Schedule expressions use Jenkins' "H" (hash) feature to distribute builds
+# and avoid all jobs running simultaneously:
+# - "H 1 * * *" = Once daily around 1 AM (exact minute varies per job)
+# - "H 3 * * *" = Once daily around 3 AM (exact minute varies per job)
+# - "H/30 * * * *" = Every 30 minutes at a consistent offset
+# - "H 4 * * 1-5" = Weekdays around 4 AM
+# This prevents resource contention and spreads the load across the Jenkins cluster
+
+services:
+  # Service with multiple parameter types
+  - name: "api-gateway"
+    repo: "api-gateway"
+    branch: "main"
+    description: "Central API Gateway with advanced configuration"
+    schedule: "H 1 * * *"
+    enableConcurrentBuilds: false
+    parameters:
+      - type: "string"
+        name: "ENVIRONMENT"
+        defaultValue: "staging"
+        description: "Deployment environment (dev, staging, production)"
+      - type: "string"
+        name: "VERSION"
+        defaultValue: "latest"
+        description: "Version tag for deployment"
+      - type: "boolean"
+        name: "RUN_INTEGRATION_TESTS"
+        defaultValue: true
+        description: "Execute integration test suite"
+      - type: "boolean"
+        name: "RUN_PERFORMANCE_TESTS"
+        defaultValue: false
+        description: "Execute performance test suite"
+      - type: "boolean"
+        name: "DEPLOY_TO_PRODUCTION"
+        defaultValue: false
+        description: "Deploy to production after successful build"
+      - type: "choice"
+        name: "LOG_LEVEL"
+        choices:
+          - "INFO"
+          - "DEBUG"
+          - "WARN"
+          - "ERROR"
+        description: "Application logging level"
+      - type: "choice"
+        name: "DEPLOYMENT_STRATEGY"
+        choices:
+          - "rolling"
+          - "blue-green"
+          - "canary"
+        description: "Deployment strategy to use"
+
+  # Service with custom Jenkinsfile path
+  - name: "data-processor"
+    repo: "data-processor"
+    branch: "main"
+    description: "Batch data processing service"
+    schedule: "H 3 * * *"
+    enableConcurrentBuilds: false
+    parameters:
+      - type: "string"
+        name: "BATCH_SIZE"
+        defaultValue: "1000"
+        description: "Number of records to process per batch"
+      - type: "boolean"
+        name: "ENABLE_MONITORING"
+        defaultValue: true
+        description: "Enable monitoring and metrics"
+
+  # Service with concurrent builds enabled
+  - name: "realtime-analytics"
+    repo: "realtime-analytics"
+    branch: "main"
+    description: "Real-time analytics processing service"
+    schedule: "H/30 * * * *"  # Every 30 minutes
+    enableConcurrentBuilds: true
+    parameters:
+      - type: "string"
+        name: "ENVIRONMENT"
+        defaultValue: "production"
+        description: "Target environment"
+      - type: "choice"
+        name: "PROCESSING_MODE"
+        choices:
+          - "fast"
+          - "accurate"
+          - "balanced"
+        description: "Processing mode for analytics"
+
+  # Service building from different branch
+  - name: "experimental-service"
+    repo: "experimental-service"
+    branch: "experimental"
+    description: "Experimental features service (builds from experimental branch)"
+    schedule: "H 4 * * 1-5"  # Weekdays at 4 AM
+    enableConcurrentBuilds: false
+    parameters:
+      - type: "boolean"
+        name: "RUN_TESTS"
+        defaultValue: true
+        description: "Run test suite"
+      - type: "boolean"
+        name: "GENERATE_REPORTS"
+        defaultValue: true
+        description: "Generate test and coverage reports"
+
+  # Minimal service configuration
+  - name: "health-check-service"
+    repo: "health-check-service"
+    branch: "main"
+    description: "Simple health check monitoring service"
+
+  # Service with multiple build schedules (using trigger)
+  - name: "reporting-service"
+    repo: "reporting-service"
+    branch: "main"
+    description: "Business reporting and dashboard service"
+    schedule: "0 6 * * 1"  # Every Monday at 6 AM
+    enableConcurrentBuilds: false
+    parameters:
+      - type: "string"
+        name: "REPORT_TYPE"
+        defaultValue: "weekly"
+        description: "Type of report to generate"
+      - type: "choice"
+        name: "OUTPUT_FORMAT"
+        choices:
+          - "PDF"
+          - "HTML"
+          - "EXCEL"
+          - "JSON"
+        description: "Output format for reports"

@@ -1,0 +1,95 @@
+# Services Configuration File
+# This file defines all microservices for which pipelines should be automatically created
+
+# Organization/Group Settings
+organization: "MyOrganization"
+gitBaseUrl: "https://github.com"
+credentials: "github-credentials"
+jenkinsfilePath: "Jenkinsfile"
+
+# List of Services
+# Each service will get its own pipeline job automatically created
+services:
+  - name: "user-service"
+    repo: "user-service"
+    branch: "main"
+    description: "User management microservice"
+    schedule: "H 2 * * *"  # Daily at 2 AM
+    enableConcurrentBuilds: false
+    parameters:
+      - type: "string"
+        name: "ENVIRONMENT"
+        defaultValue: "development"
+        description: "Target environment for deployment"
+      - type: "boolean"
+        name: "RUN_TESTS"
+        defaultValue: true
+        description: "Run automated tests"
+      - type: "choice"
+        name: "LOG_LEVEL"
+        choices:
+          - "INFO"
+          - "DEBUG"
+          - "WARN"
+          - "ERROR"
+        description: "Logging level for the application"
+
+  - name: "product-service"
+    repo: "product-service"
+    branch: "main"
+    description: "Product catalog microservice"
+    schedule: "H 2 * * *"
+    enableConcurrentBuilds: false
+    parameters:
+      - type: "string"
+        name: "ENVIRONMENT"
+        defaultValue: "development"
+        description: "Target environment for deployment"
+      - type: "boolean"
+        name: "RUN_TESTS"
+        defaultValue: true
+        description: "Run automated tests"
+
+  - name: "order-service"
+    repo: "order-service"
+    branch: "main"
+    description: "Order processing microservice"
+    schedule: "H 2 * * *"
+    enableConcurrentBuilds: false
+    parameters:
+      - type: "string"
+        name: "ENVIRONMENT"
+        defaultValue: "development"
+        description: "Target environment for deployment"
+      - type: "boolean"
+        name: "RUN_TESTS"
+        defaultValue: true
+        description: "Run automated tests"
+
+  - name: "notification-service"
+    repo: "notification-service"
+    branch: "main"
+    description: "Notification and messaging microservice"
+    schedule: "H 3 * * *"
+    enableConcurrentBuilds: false
+    parameters:
+      - type: "string"
+        name: "ENVIRONMENT"
+        defaultValue: "development"
+        description: "Target environment for deployment"
+
+  - name: "payment-service"
+    repo: "payment-service"
+    branch: "main"
+    description: "Payment processing microservice"
+    schedule: "H 2 * * *"
+    enableConcurrentBuilds: false
+    parameters:
+      - type: "string"
+        name: "ENVIRONMENT"
+        defaultValue: "development"
+        description: "Target environment for deployment"
+      - type: "boolean"
+        name: "RUN_TESTS"
+        defaultValue: true
+        description: "Run automated tests"
